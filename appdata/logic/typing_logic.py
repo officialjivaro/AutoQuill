@@ -1,7 +1,9 @@
-# /appdata/logic/typing_logic.py
 import time
 import random
-import pyautogui
+import sys
+import platform
+
+from appdata.logic.windows_key_injector import inject_unicode_char, press_backspace
 
 def perform_full_typing_loop(
     content,
@@ -31,6 +33,7 @@ def perform_full_typing_loop(
             break
         if not loop_enabled:
             break
+
         loop_delay = random.randint(loop_min_s, loop_max_s)
         counter = 0
         while counter < loop_delay:
@@ -58,20 +61,35 @@ def perform_typing(
     for char in content:
         if not is_typing_active():
             break
+
         speed_variation = random.uniform(0.8, 1.2)
+
         time.sleep(delay * speed_variation)
-        pyautogui.typewrite(char)
+
+        try:
+            inject_unicode_char(char)
+        except:
+            pass
+
         typed_count += 1
 
         if simulate_human_errors:
             if typed_count >= mistake_threshold:
                 for _ in range(errors_to_make):
                     random_char = random.choice("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
-                    pyautogui.typewrite(random_char)
                     time.sleep(delay * speed_variation)
+                    try:
+                        inject_unicode_char(random_char)
+                    except:
+                        pass
+
                 for _ in range(errors_to_make):
-                    pyautogui.press('backspace')
                     time.sleep(delay * speed_variation)
+                    try:
+                        press_backspace()
+                    except:
+                        pass
+
                 typed_count = 0
                 mistake_threshold = random.randint(min_interval, max_interval)
                 errors_to_make = random.randint(min_errors, max_errors)

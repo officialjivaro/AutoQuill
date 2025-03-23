@@ -2,7 +2,6 @@ import sys
 import threading
 import time
 import random
-import pyautogui
 from pynput import keyboard
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QDesktopServices, QIcon, QAction
@@ -16,6 +15,7 @@ from PySide6.QtWebEngineWidgets import QWebEngineView
 
 from appdata.config.constants import APP_NAME, FUNCTION_KEYS, SPEEDS
 from appdata.logic.main_window import MainWindowLogic
+from appdata.version.version import VERSION
 
 class ExternalLinkPage(QWebEnginePage):
     def acceptNavigationRequest(self, url, nav_type, is_main_frame):
@@ -27,7 +27,7 @@ class ExternalLinkPage(QWebEnginePage):
 class AutoQuillApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle(APP_NAME)
+        self.setWindowTitle(f"{APP_NAME} {VERSION}")
         self.setWindowIcon(QIcon("appdata/assets/images/icon.ico"))
         self.resize(500, 600)
 
@@ -50,7 +50,6 @@ class AutoQuillApp(QMainWindow):
         menubar = QMenuBar(self)
         self.setMenuBar(menubar)
 
-        # Match the rest of the app color scheme for the menubar and QMenu
         menubar.setStyleSheet("""
             QMenuBar {
                 background-color: #323232;
@@ -126,6 +125,7 @@ class AutoQuillApp(QMainWindow):
         self.loop_max_label = QLabel("Max(s):")
         self.loop_max_entry = QLineEdit("10")
         self.loop_max_entry.setFixedWidth(50)
+
         row2.addWidget(self.loop_checkbox)
         row2.addWidget(loop_wait_label)
         row2.addWidget(self.loop_min_label)
@@ -141,22 +141,30 @@ class AutoQuillApp(QMainWindow):
         error_settings_layout = QVBoxLayout(error_settings_box)
 
         row_err_1 = QHBoxLayout()
+        row_err_1.setSpacing(5)
+        row_err_1.addStretch()
         self.error_checkbox = QCheckBox("Simulate Human Errors")
         self.error_checkbox.toggled.connect(self.on_toggled_simulate_errors)
         row_err_1.addWidget(self.error_checkbox)
-        row_err_1.setAlignment(Qt.AlignHCenter)
+        row_err_1.addStretch()
         error_settings_layout.addLayout(row_err_1)
 
         row_err_2 = QHBoxLayout()
+        row_err_2.setSpacing(10)
+        row_err_2.addStretch()
+
         min_int_label = QLabel("Min Interval(Chars):")
         self.min_int_entry = QLineEdit(str(self.default_min_interval))
         self.min_int_entry.setFixedWidth(50)
+
         max_int_label = QLabel("Max Interval(Chars):")
         self.max_int_entry = QLineEdit(str(self.default_max_interval))
         self.max_int_entry.setFixedWidth(50)
+
         min_err_label = QLabel("Min Errors(Count):")
         self.min_err_entry = QLineEdit(str(self.default_min_errors))
         self.min_err_entry.setFixedWidth(50)
+
         max_err_label = QLabel("Max Errors(Count):")
         self.max_err_entry = QLineEdit(str(self.default_max_errors))
         self.max_err_entry.setFixedWidth(50)
@@ -172,9 +180,9 @@ class AutoQuillApp(QMainWindow):
         row_err_2.addSpacing(10)
         row_err_2.addWidget(max_err_label)
         row_err_2.addWidget(self.max_err_entry)
-        row_err_2.setAlignment(Qt.AlignHCenter)
-        error_settings_layout.addLayout(row_err_2)
 
+        row_err_2.addStretch()
+        error_settings_layout.addLayout(row_err_2)
         main_layout.addWidget(error_settings_box)
 
         self.text_edit = QPlainTextEdit()
