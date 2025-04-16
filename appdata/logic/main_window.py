@@ -80,6 +80,9 @@ class MainWindowLogic:
     def exit_app(self):
         self.gui.close()
 
+    def open_commands(self):
+        webbrowser.open("https://www.jivaro.net/downloads/programs/info/jtype")
+
     def open_about_jivaro(self):
         webbrowser.open("https://www.jivaro.net/")
 

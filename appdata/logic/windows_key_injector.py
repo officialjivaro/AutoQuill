@@ -1,11 +1,13 @@
+# windows_key_injector.py
 import ctypes
 from ctypes import wintypes
 
 user32 = ctypes.WinDLL("user32", use_last_error=True)
-
 INPUT_KEYBOARD = 1
 KEYEVENTF_UNICODE = 0x0004
 KEYEVENTF_KEYUP = 0x0002
+KEYEVENTF_SCANCODE = 0x0008
+KEYEVENTF_EXTENDEDKEY = 0x0001
 
 class KEYBDINPUT(ctypes.Structure):
     _fields_ = [
@@ -46,9 +48,40 @@ class INPUT(ctypes.Structure):
         ("_input", _INPUT_UNION),
     ]
 
-def inject_unicode_char(ch: str):
-    code = ord(ch)
+SPECIAL_KEYS = {
+    "ENTER": 0x0D,
+    "TAB": 0x09,
+    "BACKSPACE": 0x08,
+    "DEL": 0x2E,
+    "CAPSLOCK": 0x14,
+    "SHIFT": 0x10,
+    "CTRL": 0x11,
+    "ALT": 0x12,
+    "ESC": 0x1B,
+    "F1": 0x70,
+    "F2": 0x71,
+    "F3": 0x72,
+    "F4": 0x73,
+    "F5": 0x74,
+    "F6": 0x75,
+    "F7": 0x76,
+    "F8": 0x77,
+    "F9": 0x78,
+    "F10": 0x79,
+    "F11": 0x7A,
+    "F12": 0x7B,
+    "LEFT": 0x25,
+    "UP": 0x26,
+    "RIGHT": 0x27,
+    "DOWN": 0x28,
+    "HOME": 0x24,
+    "END": 0x23,
+    "PAGEUP": 0x21,
+    "PAGEDOWN": 0x22
+}
 
+def inject_unicode_char(ch):
+    code = ord(ch)
     keydown = INPUT()
     keydown.type = INPUT_KEYBOARD
     keydown.ki.wScan = code
@@ -68,15 +101,18 @@ def inject_unicode_char(ch: str):
     arr = (INPUT * 2)(keydown, keyup)
     n_sent = user32.SendInput(2, ctypes.byref(arr), ctypes.sizeof(INPUT))
     if n_sent != 2:
-        raise ctypes.WinError(ctypes.get_last_error(), "SendInput failed to inject character")
+        raise ctypes.WinError(ctypes.get_last_error())
 
 def press_backspace():
+    press_special_key("BACKSPACE")
 
-    backspace_vk = 0x08
-
+def press_special_key(key_name):
+    vk = SPECIAL_KEYS.get(key_name.upper())
+    if not vk:
+        return
     down = INPUT()
     down.type = INPUT_KEYBOARD
-    down.ki.wVk = backspace_vk
+    down.ki.wVk = vk
     down.ki.wScan = 0
     down.ki.dwFlags = 0
     down.ki.time = 0
@@ -84,7 +120,7 @@ def press_backspace():
 
     up = INPUT()
     up.type = INPUT_KEYBOARD
-    up.ki.wVk = backspace_vk
+    up.ki.wVk = vk
     up.ki.wScan = 0
     up.ki.dwFlags = KEYEVENTF_KEYUP
     up.ki.time = 0
@@ -93,4 +129,4 @@ def press_backspace():
     arr = (INPUT * 2)(down, up)
     n_sent = user32.SendInput(2, ctypes.byref(arr), ctypes.sizeof(INPUT))
     if n_sent != 2:
-        raise ctypes.WinError(ctypes.get_last_error(), "SendInput failed for backspace")
+        raise ctypes.WinError(ctypes.get_last_error())

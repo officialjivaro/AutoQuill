@@ -3,9 +3,9 @@ APP_NAME = "AutoQuill"
 FUNCTION_KEYS = [f"F{i}" for i in range(1, 13)]
 
 SPEEDS = {
-    "Very Slow": 1.0,
-    "Slow": 0.2,
-    "Moderate": 0.05,
-    "Fast": 0.01,
-    "Very Fast": 0.001
+    "Very Slow": 0.8,
+    "Slow": 0.4,
+    "Moderate": 0.2,
+    "Fast": 0.1,
+    "Very Fast": 0.05
 }

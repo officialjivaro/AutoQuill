@@ -5,13 +5,13 @@ import random
 from pynput import keyboard
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QDesktopServices, QIcon, QAction
+from PySide6.QtWebEngineCore import QWebEnginePage, QWebEngineProfile
+from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox,
     QCheckBox, QPlainTextEdit, QSizePolicy, QLineEdit, QGroupBox,
     QMenuBar, QMenu
 )
-from PySide6.QtWebEngineCore import QWebEnginePage
-from PySide6.QtWebEngineWidgets import QWebEngineView
 
 from appdata.config.constants import APP_NAME, FUNCTION_KEYS, SPEEDS
 from appdata.logic.main_window import MainWindowLogic
@@ -49,7 +49,6 @@ class AutoQuillApp(QMainWindow):
     def create_menu(self):
         menubar = QMenuBar(self)
         self.setMenuBar(menubar)
-
         menubar.setStyleSheet("""
             QMenuBar {
                 background-color: #323232;
@@ -76,10 +75,13 @@ class AutoQuillApp(QMainWindow):
         file_menu.addAction(exit_action)
 
         help_menu = menubar.addMenu("Help")
+        commands_action = QAction("Commands", self)
+        commands_action.triggered.connect(self.logic.open_commands)
         about_action = QAction("About Jivaro", self)
         about_action.triggered.connect(self.logic.open_about_jivaro)
         discord_action = QAction("Discord", self)
         discord_action.triggered.connect(self.logic.open_discord)
+        help_menu.addAction(commands_action)
         help_menu.addAction(about_action)
         help_menu.addAction(discord_action)
 
@@ -193,8 +195,17 @@ class AutoQuillApp(QMainWindow):
         self.embed_ad(main_layout)
 
     def embed_ad(self, parent_layout):
-        self.ad_view = QWebEngineView()
-        self.ad_view.setPage(ExternalLinkPage(self.ad_view))
+        self.ad_profile = QWebEngineProfile("AdProfile", self)
+        self.ad_profile.setHttpUserAgent(
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/108.0.0.0 Safari/537.36"
+        )
+
+        self.ad_view = QWebEngineView(self)
+        self.ad_page = ExternalLinkPage(self.ad_profile, self.ad_view)
+        self.ad_view.setPage(self.ad_page)
+
         self.ad_view.setFixedHeight(70)
         ad_html = """
         <html>
@@ -209,14 +220,15 @@ class AutoQuillApp(QMainWindow):
             <ins class="adsbygoogle"
                  style="display:inline-block;width:320px;height:50px"
                  data-ad-client="ca-pub-4223077320283786"
-                 data-ad-slot="4075767995"></ins>
+                 data-ad-slot="5482552078">
+            </ins>
             <script>
                (adsbygoogle = window.adsbygoogle || []).push({});
             </script>
           </body>
         </html>
         """
-        self.ad_view.setHtml(ad_html, QUrl("https://jivaro.net/misc/games-and-fun/chronogame"))
+        self.ad_view.setHtml(ad_html, QUrl("https://jivaro.net/downloads/programs/info/jtype"))
         parent_layout.addWidget(self.ad_view)
 
     def on_fkey_changed(self, new_text):
